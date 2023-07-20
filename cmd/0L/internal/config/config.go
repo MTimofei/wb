@@ -4,14 +4,28 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"time"
 )
 
 const ()
 
-type Config struct {
+type Server struct {
+	Port    string        `json:"port"`
+	Host    string        `json:"host"`
+	Timeout time.Duration `json:"timeout"`
+}
+
+type NatsStreams struct {
 	Channel string `json:"channel"`
 	Cluster string `json:"cluster"`
 	NatsURL string `json:"nats_url"`
+}
+
+type Config struct {
+	Name    string      `json:"name"`
+	Version string      `json:"version"`
+	Server  Server      `json:"server"`
+	NS      NatsStreams `json:"nats-streams"`
 }
 
 var App Config
