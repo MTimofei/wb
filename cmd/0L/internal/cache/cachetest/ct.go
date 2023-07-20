@@ -1,30 +1,34 @@
 package cachetest
 
-import "github.com/wb/cmd/0L/internal/cache"
+import "strings"
 
 type CacheTest struct {
-	cache map[string][]byte
+	cache map[string]string
 }
 
 func NewCacheTest() *CacheTest {
 	return &CacheTest{
-		cache: make(map[string][]byte),
+		cache: make(map[string]string),
 	}
 }
 
-func (c *CacheTest) Set(p cache.Payload) error {
-	c.cache[p.Key()] = p.Value()
+func (c *CacheTest) Set(json string) error {
+	c.cache[kay(json)] = json
 
 	return nil
 }
 
-func (c *CacheTest) SetList(p []cache.Payload) error {
-	for _, v := range p {
-		c.cache[v.Key()] = v.Value()
+func (c *CacheTest) SetList(jsonList []string) error {
+	for _, json := range jsonList {
+		c.cache[kay(json)] = json
 	}
 	return nil
 }
 
-func (c *CacheTest) Single(kay string) (cache.Payload, error) {
-	return cache.NewPayload(kay, c.cache[kay]), nil
+func (c *CacheTest) Single(kay string) (string, error) {
+	return c.cache[kay], nil
+}
+
+func kay(json string) string {
+	return strings.Trim(strings.SplitAfterN(json, "\"", 5)[3], "\"")
 }
