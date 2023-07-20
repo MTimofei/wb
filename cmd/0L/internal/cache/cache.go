@@ -7,13 +7,21 @@ type Cache interface {
 }
 
 type Payload struct {
-	Key   string
-	Value []byte
+	key   string
+	value []byte
 }
 
 func NewPayload(key string, value []byte) Payload {
 	return Payload{
-		Key:   key,
-		Value: value,
+		key:   key,
+		value: value,
 	}
+}
+
+func (p Payload) Key() string {
+	return p.key
+}
+
+func (p Payload) Value() []byte {
+	return p.value
 }
