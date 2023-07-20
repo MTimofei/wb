@@ -1,7 +1,7 @@
 package natstreams
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/nats-io/stan.go"
@@ -14,11 +14,12 @@ const (
 )
 
 const (
-	ErrConnect     = "NATS-STREAM cen't connect "
-	ErrClose       = "NATS-STREAM cen't close connect "
-	ErrSubscribe   = "NATS-STREAM cen't subscribe "
-	ErrUnsubscribe = "NATS-STREAM cen't unsubscribe "
-	EreWork        = "NATS-STREAM cen't work "
+	ErrConnect           = " cen't connect "
+	ErrClose             = " cen't close connect "
+	ErrSubscribe         = " cen't subscribe "
+	ErrUnsubscribe       = " cen't unsubscribe "
+	EreWork              = " cen't work "
+	ErrSubscribeNotValid = " subject is not valid "
 )
 
 type NatsStreams struct {
@@ -28,7 +29,12 @@ type NatsStreams struct {
 
 func NewNatsStreams() (ns *NatsStreams, err error) {
 	defer erro.IsError(ErrConnect, err)
-	sc, err := stan.Connect(config.App.Cluster, role, stan.NatsURL(config.App.NatsURL))
+
+	sc, err := stan.Connect(
+		config.App.NS.Cluster,
+		role,
+		stan.NatsURL(config.App.NS.NatsURL),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +45,7 @@ func (ns *NatsStreams) Subscribe() (err error) {
 	defer erro.IsError(ErrSubscribe, err)
 
 	sub, err := ns.sc.Subscribe(
-		config.App.Channel,
+		config.App.NS.Channel,
 		handlerMsg,
 		stan.DurableName("myApp"),
 		stan.DeliverAllAvailable(),
@@ -56,6 +62,7 @@ func (ns *NatsStreams) Subscribe() (err error) {
 }
 func (ns *NatsStreams) Work() (err error) {
 	defer erro.IsError(EreWork, err)
+
 	err = ns.Subscribe()
 	if err != nil {
 		return err
@@ -65,12 +72,10 @@ func (ns *NatsStreams) Work() (err error) {
 		if ns.sub.IsValid() {
 			time.Sleep(1 * time.Second)
 		} else {
-			log.Println("subject is not valid")
-			break
+			err = fmt.Errorf("%s", ErrSubscribeNotValid)
+			return err
 		}
 	}
-
-	return nil
 }
 
 func (ns *NatsStreams) Unsubscribe() (err error) {
@@ -88,6 +93,17 @@ func (ns *NatsStreams) Close() (err error) {
 	defer erro.IsError(ErrClose, err)
 
 	err = ns.sc.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ns *NatsStreams) Started() (err error) {
+	defer erro.IsError("NATS-STREAMS", err)
+	defer func(error) { err = ns.Close() }(err)
+	defer func(error) { err = ns.Unsubscribe() }(err)
+	err = ns.Work()
 	if err != nil {
 		return err
 	}
