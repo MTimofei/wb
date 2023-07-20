@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/wb/cmd/0L/internal/config"
+	"github.com/wb/cmd/0L/internal/server"
 )
 
 func main() {
-	fmt.Println(config.App)
+	if err := server.NewServer().Run(); err != nil {
+		panic(err)
+	}
 }

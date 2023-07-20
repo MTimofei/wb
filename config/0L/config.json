@@ -1,5 +1,14 @@
 {
+    "name":"0L",
+    "version":"0.0.1",
+    "server":{
+        "host":"127.0.0.1",
+        "port":"8080",
+        "timeout":5000000000
+    },
+    "nats-streams":{
     "channel":"json2",
     "cluster":"test-cluster",
     "nats_url":"nats://localhost:4222"
+    }
 }
