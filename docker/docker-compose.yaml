@@ -16,7 +16,7 @@ services:
     ports:
       - "5432:5432"
   redis:
-    container_name: cacahe
+    container_name: cache
     image: redis:6.0.20-alpine3.18
     ports:
       - "6379:6379"
