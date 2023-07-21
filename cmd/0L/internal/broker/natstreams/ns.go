@@ -23,12 +23,14 @@ const (
 )
 
 type NatsStreams struct {
+	// tarnsport chan string
+	// signal    chan os.Signal
 	sc  stan.Conn
 	sub stan.Subscription
 }
 
-func NewNatsStreams() (ns *NatsStreams, err error) {
-	defer erro.IsError(ErrConnect, err)
+func NewNatsStreams( /*signal chan os.Signal*/ ) (ns *NatsStreams, err error) {
+	defer func(error) { erro.IsError(ErrConnect, err) }(err)
 
 	sc, err := stan.Connect(
 		config.App.NS.Cluster,
@@ -39,14 +41,14 @@ func NewNatsStreams() (ns *NatsStreams, err error) {
 		return nil, err
 	}
 
-	return &NatsStreams{sc: sc, sub: nil}, nil
+	return &NatsStreams{ /*signal: signal,*/ sc: sc, sub: nil}, nil
 }
 func (ns *NatsStreams) Subscribe() (err error) {
-	defer erro.IsError(ErrSubscribe, err)
+	defer func(error) { erro.IsError(ErrSubscribe, err) }(err)
 
 	sub, err := ns.sc.Subscribe(
 		config.App.NS.Channel,
-		handlerMsg,
+		/*ns.*/ handlerMsg,
 		stan.DurableName("myApp"),
 		stan.DeliverAllAvailable(),
 		stan.SetManualAckMode(),
@@ -61,7 +63,7 @@ func (ns *NatsStreams) Subscribe() (err error) {
 	return nil
 }
 func (ns *NatsStreams) Work() (err error) {
-	defer erro.IsError(EreWork, err)
+	defer func(error) { erro.IsError(EreWork, err) }(err)
 
 	err = ns.Subscribe()
 	if err != nil {
@@ -79,7 +81,7 @@ func (ns *NatsStreams) Work() (err error) {
 }
 
 func (ns *NatsStreams) Unsubscribe() (err error) {
-	defer erro.IsError(ErrUnsubscribe, err)
+	defer func(error) { erro.IsError(ErrUnsubscribe, err) }(err)
 
 	err = ns.sub.Unsubscribe()
 	if err != nil {
@@ -90,7 +92,7 @@ func (ns *NatsStreams) Unsubscribe() (err error) {
 }
 
 func (ns *NatsStreams) Close() (err error) {
-	defer erro.IsError(ErrClose, err)
+	defer func(error) { erro.IsError(ErrClose, err) }(err)
 
 	err = ns.sc.Close()
 	if err != nil {
@@ -100,7 +102,7 @@ func (ns *NatsStreams) Close() (err error) {
 }
 
 func (ns *NatsStreams) Started() (err error) {
-	defer erro.IsError("NATS-STREAMS", err)
+	defer func(error) { erro.IsError("NATS-STREAMS", err) }(err)
 	defer func(error) { err = ns.Close() }(err)
 	defer func(error) { err = ns.Unsubscribe() }(err)
 	err = ns.Work()
