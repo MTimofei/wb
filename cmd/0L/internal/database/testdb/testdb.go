@@ -28,3 +28,7 @@ func (t *TestDB) List() ([]string, error) {
 func kay(json string) string {
 	return strings.Trim(strings.SplitAfterN(json, "\"", 5)[3], "\"")
 }
+
+func (t *TestDB) Close() error {
+	return nil
+}
