@@ -9,13 +9,17 @@ import (
 	"github.com/wb/cmd/0L/internal/cache"
 	"github.com/wb/cmd/0L/internal/cache/cachetest"
 	"github.com/wb/cmd/0L/internal/database"
-	"github.com/wb/cmd/0L/internal/database/testdb"
+	"github.com/wb/cmd/0L/internal/database/pgsql"
 	"github.com/wb/pkg/erro"
 )
 
 const (
 	ErrStarted    = "cen't started"
 	ErrDistribute = "can't distribute"
+)
+
+const (
+	ErrDuplicate = "err set::ERROR #23505 duplicate key value violates unique constraint \"json_object_pkey\""
 )
 
 type app struct {
@@ -44,6 +48,8 @@ func (app *app) Start() (err error) {
 }
 
 func (app *app) Work() {
+	defer app.db.Close()
+
 	go func() {
 		err := app.broker.Started()
 		if err != nil {
@@ -57,6 +63,10 @@ func (app *app) Work() {
 
 			err := app.db.Set(json)
 			if err != nil {
+				if err.Error() == ErrDuplicate {
+					app.ack <- ok
+					continue
+				}
 				log.Println(err)
 				ok = false
 				app.ack <- ok
@@ -97,10 +107,10 @@ func init() {
 	var broker broker.Broker
 	var err error
 
-	db = testdb.NewTestDB()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	db, err = pgsql.New()
+	if err != nil {
+		panic(err)
+	}
 
 	cache = cachetest.NewCacheTest()
 	// if err != nil {
