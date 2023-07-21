@@ -10,5 +10,11 @@
     "channel":"json2",
     "cluster":"test-cluster",
     "nats_url":"nats://localhost:4222"
+    },
+    "postgras":{
+    "addr":"127.0.0.1:5432",
+    "user":"oluser",
+    "password":"olpassword",
+    "database":"olpdb"
     }
 }

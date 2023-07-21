@@ -21,11 +21,19 @@ type NatsStreams struct {
 	NatsURL string `json:"nats_url"`
 }
 
+type Postgres struct {
+	Addr     string `json:"addr"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Database string `json:"database"`
+}
+
 type Config struct {
 	Name    string      `json:"name"`
 	Version string      `json:"version"`
 	Server  Server      `json:"server"`
 	NS      NatsStreams `json:"nats-streams"`
+	Pg      Postgres    `json:"postgras"`
 }
 
 var App Config
