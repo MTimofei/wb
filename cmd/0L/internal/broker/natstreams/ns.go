@@ -23,13 +23,14 @@ const (
 )
 
 type NatsStreams struct {
-	// tarnsport chan string
 	// signal    chan os.Signal
-	sc  stan.Conn
-	sub stan.Subscription
+	sc        stan.Conn
+	sub       stan.Subscription
+	transport chan string
+	ack       chan bool
 }
 
-func NewNatsStreams( /*signal chan os.Signal*/ ) (ns *NatsStreams, err error) {
+func NewNatsStreams( /*signal chan os.Signal,*/ transport chan string, ack chan bool) (ns *NatsStreams, err error) {
 	defer func(error) { erro.IsError(ErrConnect, err) }(err)
 
 	sc, err := stan.Connect(
@@ -41,14 +42,15 @@ func NewNatsStreams( /*signal chan os.Signal*/ ) (ns *NatsStreams, err error) {
 		return nil, err
 	}
 
-	return &NatsStreams{ /*signal: signal,*/ sc: sc, sub: nil}, nil
+	fmt.Println("connect to: ", config.App.NS.NatsURL)
+	return &NatsStreams{ /*signal: signal,*/ sc: sc, sub: nil, transport: transport, ack: ack}, nil
 }
 func (ns *NatsStreams) Subscribe() (err error) {
 	defer func(error) { erro.IsError(ErrSubscribe, err) }(err)
 
 	sub, err := ns.sc.Subscribe(
 		config.App.NS.Channel,
-		/*ns.*/ handlerMsg,
+		ns.handlerMsg,
 		stan.DurableName("myApp"),
 		stan.DeliverAllAvailable(),
 		stan.SetManualAckMode(),
@@ -60,6 +62,7 @@ func (ns *NatsStreams) Subscribe() (err error) {
 
 	ns.sub = sub
 
+	fmt.Println("subscribe to: ", config.App.NS.NatsURL)
 	return nil
 }
 func (ns *NatsStreams) Work() (err error) {
@@ -69,7 +72,7 @@ func (ns *NatsStreams) Work() (err error) {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("work nats")
 	for {
 		if ns.sub.IsValid() {
 			time.Sleep(1 * time.Second)
@@ -87,7 +90,7 @@ func (ns *NatsStreams) Unsubscribe() (err error) {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("unsubscribe nats")
 	return nil
 }
 
@@ -98,6 +101,8 @@ func (ns *NatsStreams) Close() (err error) {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("close nats")
 	return nil
 }
 
