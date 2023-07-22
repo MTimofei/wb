@@ -6,6 +6,8 @@ require github.com/nats-io/stan.go v0.10.4
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
@@ -20,8 +22,10 @@ require (
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/nats-io/jwt/v2 v2.4.1 // indirect
 	github.com/prometheus/procfs v0.11.0 // indirect
+	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.uber.org/automaxprocs v1.5.1 // indirect
+	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
 
