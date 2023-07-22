@@ -14,7 +14,7 @@ const (
 )
 
 const (
-	ErrConnect           = " cen't connect "
+	ErrInit              = " cen't init nats:"
 	ErrClose             = " cen't close connect "
 	ErrSubscribe         = " cen't subscribe "
 	ErrUnsubscribe       = " cen't unsubscribe "
@@ -23,15 +23,14 @@ const (
 )
 
 type NatsStreams struct {
-	// signal    chan os.Signal
 	sc        stan.Conn
 	sub       stan.Subscription
 	transport chan string
 	ack       chan bool
 }
 
-func NewNatsStreams( /*signal chan os.Signal,*/ transport chan string, ack chan bool) (ns *NatsStreams, err error) {
-	defer func(error) { erro.IsError(ErrConnect, err) }(err)
+func New(transport chan string, ack chan bool) (ns *NatsStreams, err error) {
+	defer func(error) { erro.IsError(ErrInit, err) }(err)
 
 	sc, err := stan.Connect(
 		config.App.NS.Cluster,
@@ -43,7 +42,7 @@ func NewNatsStreams( /*signal chan os.Signal,*/ transport chan string, ack chan 
 	}
 
 	fmt.Println("connect to: ", config.App.NS.NatsURL)
-	return &NatsStreams{ /*signal: signal,*/ sc: sc, sub: nil, transport: transport, ack: ack}, nil
+	return &NatsStreams{sc: sc, sub: nil, transport: transport, ack: ack}, nil
 }
 func (ns *NatsStreams) Subscribe() (err error) {
 	defer func(error) { erro.IsError(ErrSubscribe, err) }(err)
@@ -73,6 +72,7 @@ func (ns *NatsStreams) Work() (err error) {
 		return err
 	}
 	fmt.Println("work nats")
+
 	for {
 		if ns.sub.IsValid() {
 			time.Sleep(1 * time.Second)
@@ -108,8 +108,8 @@ func (ns *NatsStreams) Close() (err error) {
 
 func (ns *NatsStreams) Started() (err error) {
 	defer func(error) { erro.IsError("NATS-STREAMS", err) }(err)
-	defer func(error) { err = ns.Close() }(err)
-	defer func(error) { err = ns.Unsubscribe() }(err)
+	// defer func(error) { err = ns.Close() }(err)
+	// defer func(error) { err = ns.Unsubscribe() }(err)
 	err = ns.Work()
 	if err != nil {
 		return err

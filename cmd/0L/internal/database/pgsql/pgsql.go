@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ErrPostgres = "err Postgres:"
+	ErrPostgres = "cen't init postgres:"
 	ErrClose    = "err close db:"
 	ErrSet      = "err set:"
 	ErrList     = "err cen't get list:"
@@ -21,9 +21,9 @@ const (
 	list    = `SELECT json_data FROM json_object`
 	single  = `SELECT json_data FROM json_object WHERE order_uid = ?`
 	migrate = `CREATE TABLE IF NOT EXISTS json_object (
-		order_uid VARCHAR(255) NOT NULL PRIMARY KEY,
-		json_data JSON NOT NULL
-		);`
+				order_uid VARCHAR(255) NOT NULL PRIMARY KEY,
+				json_data JSON NOT NULL
+				);`
 )
 
 type Postgres struct {
