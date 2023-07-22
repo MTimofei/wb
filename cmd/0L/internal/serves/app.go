@@ -1,16 +1,18 @@
 package serves
 
 import (
-	"log"
-	"time"
+	"os"
 
 	"github.com/wb/cmd/0L/internal/broker"
 	"github.com/wb/cmd/0L/internal/broker/natstreams"
 	"github.com/wb/cmd/0L/internal/cache"
-	"github.com/wb/cmd/0L/internal/cache/cachetest"
+	"github.com/wb/cmd/0L/internal/cache/rds"
+	"github.com/wb/cmd/0L/internal/config"
 	"github.com/wb/cmd/0L/internal/database"
 	"github.com/wb/cmd/0L/internal/database/pgsql"
 	"github.com/wb/pkg/erro"
+	"github.com/wb/pkg/logg"
+	"golang.org/x/exp/slog"
 )
 
 const (
@@ -28,6 +30,8 @@ type app struct {
 	db        database.DataBase
 	transport chan string
 	ack       chan bool
+	log       *slog.Logger
+	ok        bool
 }
 
 var App app
@@ -47,8 +51,14 @@ func (app *app) Start() (err error) {
 	return nil
 }
 
+func (app *app) Close() {
+	app.broker.Unsubscribe()
+	app.broker.Close()
+	app.ok = false
+	app.db.Close()
+}
 func (app *app) Work() {
-	defer app.db.Close()
+	//defer app.close()
 
 	go func() {
 		err := app.broker.Started()
@@ -56,18 +66,18 @@ func (app *app) Work() {
 			panic(err)
 		}
 	}()
-	for {
+	for app.ok {
 		select {
 		case json := <-app.transport:
 			var ok bool = true
 
 			err := app.db.Set(json)
 			if err != nil {
-				if err.Error() == ErrDuplicate {
+				if "" == ErrDuplicate {
 					app.ack <- ok
 					continue
 				}
-				log.Println(err)
+				app.log.Error("", logg.Err(err))
 				ok = false
 				app.ack <- ok
 				continue
@@ -75,7 +85,7 @@ func (app *app) Work() {
 
 			err = app.cache.Set(json)
 			if err != nil {
-				log.Println(err)
+				app.log.Error("", logg.Err(err))
 				ok = false
 				app.ack <- ok
 				continue
@@ -83,7 +93,7 @@ func (app *app) Work() {
 
 			app.ack <- ok
 		default:
-			time.Sleep(1 * time.Second)
+			// time.Sleep(100 * time.Millisecond)
 		}
 	}
 }
@@ -107,19 +117,24 @@ func init() {
 	var broker broker.Broker
 	var err error
 
+	log := logg.New(config.App.Env)
+
 	db, err = pgsql.New()
 	if err != nil {
-		panic(err)
+		log.Error("", logg.Err(err))
+		os.Exit(1)
 	}
 
-	cache = cachetest.NewCacheTest()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	broker, err = natstreams.NewNatsStreams(transport, ack)
+	cache, err = rds.New()
 	if err != nil {
-		panic(err)
+		log.Error("", logg.Err(err))
+		os.Exit(1)
+	}
+
+	broker, err = natstreams.New(transport, ack)
+	if err != nil {
+		log.Error("", logg.Err(err))
+		os.Exit(1)
 	}
 
 	App = app{
@@ -128,5 +143,7 @@ func init() {
 		db:        db,
 		transport: transport,
 		ack:       ack,
+		log:       log,
+		ok:        true,
 	}
 }
