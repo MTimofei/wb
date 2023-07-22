@@ -90,7 +90,7 @@ func (ns *NatsStreams) Unsubscribe() (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println("unsubscribe nats")
+	// fmt.Println("unsubscribe nats")
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (ns *NatsStreams) Close() (err error) {
 		return err
 	}
 
-	fmt.Println("close nats")
+	// fmt.Println("close nats")
 	return nil
 }
 

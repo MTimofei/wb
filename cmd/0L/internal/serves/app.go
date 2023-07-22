@@ -30,7 +30,7 @@ type app struct {
 	db        database.DataBase
 	transport chan string
 	ack       chan bool
-	log       *slog.Logger
+	Log       *slog.Logger
 	ok        bool
 }
 
@@ -77,7 +77,7 @@ func (app *app) Work() {
 					app.ack <- ok
 					continue
 				}
-				app.log.Error("", logg.Err(err))
+				app.Log.Error("", logg.Err(err))
 				ok = false
 				app.ack <- ok
 				continue
@@ -85,7 +85,7 @@ func (app *app) Work() {
 
 			err = app.cache.Set(json)
 			if err != nil {
-				app.log.Error("", logg.Err(err))
+				app.Log.Error("", logg.Err(err))
 				ok = false
 				app.ack <- ok
 				continue
@@ -143,7 +143,7 @@ func init() {
 		db:        db,
 		transport: transport,
 		ack:       ack,
-		log:       log,
+		Log:       log,
 		ok:        true,
 	}
 }
