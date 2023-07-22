@@ -28,12 +28,18 @@ type Postgres struct {
 	Database string `json:"database"`
 }
 
+type Redis struct {
+	Addr string `json:"addr"`
+}
+
 type Config struct {
 	Name    string      `json:"name"`
 	Version string      `json:"version"`
+	Env     string      `json:"env"`
 	Server  Server      `json:"server"`
 	NS      NatsStreams `json:"nats-streams"`
 	Pg      Postgres    `json:"postgras"`
+	Rds     Redis       `json:"redis"`
 }
 
 var App Config

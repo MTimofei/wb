@@ -1,6 +1,7 @@
 {
     "name":"0L",
     "version":"0.0.1",
+    "env":"local",
     "server":{
         "host":"127.0.0.1",
         "port":"8080",
@@ -16,5 +17,8 @@
     "user":"oluser",
     "password":"olpassword",
     "database":"olpdb"
+    },
+    "redis":{
+    "addr":"127.0.0.1:6379"
     }
 }
