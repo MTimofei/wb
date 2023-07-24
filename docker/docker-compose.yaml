@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  nats-stream:
+    container_name: beoker
+    image: nats-streaming:latest
+    ports: 
+      - "4222:4222"
+      - "8222:8222"
+  db:
+    container_name: storsge
+    image: postgres:alpine3.18
+    environment:
+      POSTGRES_USER: oluser
+      POSTGRES_PASSWORD: olpassword
+      POSTGRES_DB: olpdb
+    ports:
+      - "5432:5432"
+  redis:
+    container_name: cache
+    image: redis:6.0.20-alpine3.18
+    ports:
+      - "6379:6379"
+    
