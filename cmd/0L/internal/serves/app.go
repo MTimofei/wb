@@ -57,6 +57,7 @@ func (app *app) Close() {
 	app.ok = false
 	app.db.Close()
 }
+
 func (app *app) Work() {
 	//defer app.close()
 
@@ -73,7 +74,7 @@ func (app *app) Work() {
 
 			err := app.db.Set(json)
 			if err != nil {
-				if "" == ErrDuplicate {
+				if err.Error() == ErrDuplicate {
 					app.ack <- ok
 					continue
 				}
