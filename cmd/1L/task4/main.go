@@ -20,20 +20,22 @@ type Data struct{}
 
 // при старет указываем флаг WORKER с нужным количеством
 var w = flag.Int("WORKER", runtime.NumGoroutine(), "number of workers")
-
 var stream []Data
 var wg *sync.WaitGroup = &sync.WaitGroup{}
+var ok bool = true
 
 func main() {
 	flag.Parse()
-	fmt.Println(*w)
+
 	var mainCh = make(chan Data, *w)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for _, volume := range stream {
-			mainCh <- volume
+		for ok {
+			for _, volume := range stream {
+				mainCh <- volume
+			}
 		}
 	}()
 
@@ -41,14 +43,15 @@ func main() {
 		go worker(mainCh, wg)
 	}
 
-	wg.Add(1)
+	// wg.Add(1)
 	// при нажаии Ctrl+C будит закрываться main chan
 	go func() {
-		defer wg.Done()
+		// defer wg.Done()
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, os.Interrupt)
 		<-quit
 		close(mainCh)
+		ok = false
 	}()
 
 	// функция main не завершится пока не отработают все worker
@@ -58,7 +61,12 @@ func main() {
 // покак канал открыт, worker будеьт работать
 func worker(mainCh chan Data, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for v := range mainCh {
-		fmt.Println(v)
+	for ok {
+		select {
+		case v := <-mainCh:
+			fmt.Println(v)
+		default:
+		}
 	}
+
 }
