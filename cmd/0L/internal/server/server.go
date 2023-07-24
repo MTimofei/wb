@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/wb/cmd/0L/internal/config"
-	"github.com/wb/pkg/erro"
 )
 
 const (
@@ -28,9 +27,9 @@ func NewServer() *Server {
 	}
 }
 
-func (s *Server) Run() error {
-	defer erro.IsError(ErrRun, s.srv.ListenAndServe())
-	err := s.srv.ListenAndServe()
+func (s *Server) Run() (err error) {
+	// defer func() { err = erro.IsError(ErrRun, err) }()
+	err = s.srv.ListenAndServe()
 	if err != nil {
 		return err
 	}

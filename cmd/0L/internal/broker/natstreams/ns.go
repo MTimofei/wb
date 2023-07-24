@@ -30,7 +30,7 @@ type NatsStreams struct {
 }
 
 func New(transport chan string, ack chan bool) (ns *NatsStreams, err error) {
-	defer func(error) { erro.IsError(ErrInit, err) }(err)
+	defer func(error) { err = erro.IsError(ErrInit, err) }(err)
 
 	sc, err := stan.Connect(
 		config.App.NS.Cluster,
@@ -45,7 +45,7 @@ func New(transport chan string, ack chan bool) (ns *NatsStreams, err error) {
 	return &NatsStreams{sc: sc, sub: nil, transport: transport, ack: ack}, nil
 }
 func (ns *NatsStreams) Subscribe() (err error) {
-	defer func(error) { erro.IsError(ErrSubscribe, err) }(err)
+	defer func(error) { err = erro.IsError(ErrSubscribe, err) }(err)
 
 	sub, err := ns.sc.Subscribe(
 		config.App.NS.Channel,
@@ -65,7 +65,7 @@ func (ns *NatsStreams) Subscribe() (err error) {
 	return nil
 }
 func (ns *NatsStreams) Work() (err error) {
-	defer func(error) { erro.IsError(EreWork, err) }(err)
+	defer func(error) { err = erro.IsError(EreWork, err) }(err)
 
 	err = ns.Subscribe()
 	if err != nil {
@@ -84,7 +84,7 @@ func (ns *NatsStreams) Work() (err error) {
 }
 
 func (ns *NatsStreams) Unsubscribe() (err error) {
-	defer func(error) { erro.IsError(ErrUnsubscribe, err) }(err)
+	defer func(error) { err = erro.IsError(ErrUnsubscribe, err) }(err)
 
 	err = ns.sub.Unsubscribe()
 	if err != nil {
@@ -95,14 +95,13 @@ func (ns *NatsStreams) Unsubscribe() (err error) {
 }
 
 func (ns *NatsStreams) Close() (err error) {
-	defer func(error) { erro.IsError(ErrClose, err) }(err)
+	defer func(error) { err = erro.IsError(ErrClose, err) }(err)
 
 	err = ns.sc.Close()
 	if err != nil {
 		return err
 	}
 
-	// fmt.Println("close nats")
 	return nil
 }
 
