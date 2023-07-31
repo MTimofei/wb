@@ -33,8 +33,10 @@ func reverse1(s string) string {
 func reverse2(s string) string {
 	runs := []rune(s)
 	length := len(runs)
+
 	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
 		runs[i], runs[j] = runs[j], runs[i]
 	}
 	return string(runs)
+
 }
